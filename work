@@ -1,0 +1,155 @@
+from pathlib import Path
+import os
+import speech
+import sys
+import random
+import time
+import json
+from line_profiler import LineProfiler
+from memory_profiler import profile
+from tqdm import *
+import pysnooper
+
+
+def file_decorator(fun1):
+
+    def wrapthefunction(path):
+        just = fun1(path)  #检查对应路径文件夹是否存在
+        if just:
+            print('对应路径文件夹存在')
+        else:
+            os.mkdir(r"D:\pyctry\one\new8")
+            print('文件夹不存在')
+            print(r'已创建新文件夹：D:\pyctry\one\new8')
+    return wrapthefunction
+
+
+@file_decorator
+def docu_inspection(path):
+    file = Path(path)
+    just = file.exists()
+    return just
+
+
+class SoundDecorate:
+
+    def info(self, func):
+        def wrap(*x):
+            lists = func(*x)  #承接返回值
+            for j in lists:
+                print(j)
+                speech.say(j)  #播放提示
+        return wrap
+
+
+decorate = SoundDecorate()
+
+
+@decorate.info
+def fun2(*x):
+    lists = []
+    for i in x:  #根据类型确定返回值
+        if type(i) == int:
+            lists.append("int")
+        elif type(i) == str:
+            lists.append("str")
+        elif type(i) == list:
+            lists.append("list")
+        elif type(i) == tuple:
+            lists.append("tuple")
+        elif type(i) == float:
+            lists.append("float")
+    print('结束啦！')
+    return lists
+
+
+def print_collect(func3):
+
+    def write_to_file():
+        func3()  #观察输出
+        temp = sys.stdout
+        f = open('printcollect.txt', 'w')   #写入文件
+        sys.stdout = f
+        func3()
+        sys.stdout = temp
+    return write_to_file
+
+
+@print_collect
+def print_func():
+    print('aaa')
+    print('bbb')
+    return
+
+
+class Time_cons:
+
+    def __init__(self, max, lis, a, b, c, d):
+        self.max = max
+        self.lis = lis
+        self.a = a
+        self.b = b
+        self.c = c
+        self.d = d
+
+    def creat_lis(self):
+        for i in tqdm(range(self.max)):
+            if i % 31 == 0:
+                self.lis.append(random.randint(self.max+10, self.max+100))
+            elif i % 13 == 0:
+                self.lis.append('th'+str(i))
+            elif i % 91 == 0:
+                time.sleep(1)
+                self.lis.append((0, i))
+            else:
+                self.lis.append(i)
+
+    @profile
+    def ergodic_lis(self):
+        for j in self.lis:
+            if type(j) == int:
+                if j % 2 == 0:
+                    self.a += 1
+                else:
+                    self.b += 1
+            elif type(j) == str:
+                self.c += 1
+            else:
+                self.d += 1
+
+    @pysnooper.snoop()
+    def write_f(self):
+        lis1 = []
+        for k in self.lis:
+            if type(k) == str:
+                lis1.append(k)
+            else:
+                alt = str(k)
+                lis1.append(alt)
+        fp = open('test.txt', 'w')
+        cont = json.dumps(lis1)
+        fp.write(cont)
+        json.dump(lis1, fp)
+        fp.close()
+
+def main():
+    path = "D:\pyctry\one\picturess"
+    #docu_inspection(path)
+    #fun2(1, 1.1, 'etr')
+    #print_func()
+    lp = LineProfiler()
+    max = 100
+    lis = []
+    a, b, c, d = 0, 0, 0, 0
+    test = Time_cons(max, lis, a, b, c, d)
+    test_func1 = lp(test.creat_lis)
+    test_func1()
+    lp.print_stats()
+    test.creat_lis()
+    test.ergodic_lis()
+    test.write_f()
+    return
+
+
+main()
+
